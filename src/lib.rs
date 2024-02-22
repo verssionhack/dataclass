@@ -1,9 +1,12 @@
 #![allow(unused)]
-use std::{str::FromStr};
 use proc_macro::TokenStream;
+use std::str::FromStr;
 
 use quote::{quote, ToTokens};
-use syn::{spanned::Spanned, Data, DeriveInput, Fields, Field, Meta, LitStr, LitBool, meta::ParseNestedMeta};
+use syn::{
+    meta::ParseNestedMeta, spanned::Spanned, Data, DeriveInput, Field, Fields, LitBool, LitStr,
+    Meta,
+};
 
 struct Dataclass;
 
@@ -65,45 +68,41 @@ impl DataclassTemplate {
     }
 
     fn return_type(name: &str) -> Option<&'static str> {
-        Some(
-            match name {
-                Self::U8 =>                 Self::U8,
-                Self::U16 =>                 Self::U16,
-                Self::U32 =>                 Self::U32,
-                Self::U64 =>                 Self::U64,
-                Self::U128 =>                 Self::U128,
-                Self::I8 =>                 Self::I8,
-                Self::I16 =>                 Self::I16,
-                Self::I32 =>                 Self::I32,
-                Self::I64 =>                 Self::I64,
-                Self::I128 =>                 Self::I128,
-                Self::F32 =>                 Self::F32,
-                Self::F64 =>                 Self::F64,
-                Self::STRING => Self::STR,
-                _ => {return None}
-            }
-            )
+        Some(match name {
+            Self::U8 => Self::U8,
+            Self::U16 => Self::U16,
+            Self::U32 => Self::U32,
+            Self::U64 => Self::U64,
+            Self::U128 => Self::U128,
+            Self::I8 => Self::I8,
+            Self::I16 => Self::I16,
+            Self::I32 => Self::I32,
+            Self::I64 => Self::I64,
+            Self::I128 => Self::I128,
+            Self::F32 => Self::F32,
+            Self::F64 => Self::F64,
+            Self::STRING => Self::STR,
+            _ => return None,
+        })
     }
 
     fn input_type(name: &str) -> Option<&'static str> {
-        Some(
-            match name {
-                Self::U8 =>                 Self::U8,
-                Self::U16 =>                 Self::U16,
-                Self::U32 =>                 Self::U32,
-                Self::U64 =>                 Self::U64,
-                Self::U128 =>                 Self::U128,
-                Self::I8 =>                 Self::I8,
-                Self::I16 =>                 Self::I16,
-                Self::I32 =>                 Self::I32,
-                Self::I64 =>                 Self::I64,
-                Self::I128 =>                 Self::I128,
-                Self::F32 =>                 Self::F32,
-                Self::F64 =>                 Self::F64,
-                Self::STRING => Self::STR,
-                _ => {return None}
-            }
-            )
+        Some(match name {
+            Self::U8 => Self::U8,
+            Self::U16 => Self::U16,
+            Self::U32 => Self::U32,
+            Self::U64 => Self::U64,
+            Self::U128 => Self::U128,
+            Self::I8 => Self::I8,
+            Self::I16 => Self::I16,
+            Self::I32 => Self::I32,
+            Self::I64 => Self::I64,
+            Self::I128 => Self::I128,
+            Self::F32 => Self::F32,
+            Self::F64 => Self::F64,
+            Self::STRING => Self::STR,
+            _ => return None,
+        })
     }
 
     fn sync_rwlock_setter(name: &str, value: &str) -> String {
@@ -132,34 +131,52 @@ impl DataclassTemplate {
     }
 
     fn match_setter_template(field: &Field, index: Option<usize>) -> Option<String> {
-        let name = field.ident.as_ref().map(|v| v.to_string()).unwrap_or_else(|| index.unwrap().to_string());
-        let ty = field.ty.span().source_text().to_token_stream().to_string().replace("\"", "");
+        let name = field
+            .ident
+            .as_ref()
+            .map(|v| v.to_string())
+            .unwrap_or_else(|| index.unwrap().to_string());
+        let ty = field
+            .ty
+            .span()
+            .source_text()
+            .to_token_stream()
+            .to_string()
+            .replace("\"", "");
         //println!("{:?}", field.ty.to_token_stream());
-        //println!("match_type: {}", &ty);
         Some(match ty.as_str() {
-            Self::RWLOCK => {Self::sync_rwlock_setter(&name, "value")}
-            Self::MUTEX => {Self::sync_mutex_setter(&name, "value")}
-            Self::CELL => {Self::cell_setter(&name, "value")}
-            Self::REF_CELL => {Self::refcell_setter(&name, "value")}
-            _ => {return None}
+            Self::RWLOCK => Self::sync_rwlock_setter(&name, "value"),
+            Self::MUTEX => Self::sync_mutex_setter(&name, "value"),
+            Self::CELL => Self::cell_setter(&name, "value"),
+            Self::REF_CELL => Self::refcell_setter(&name, "value"),
+            _ => return None,
         })
     }
 
     fn match_getter_template(field: &Field, index: Option<usize>) -> Option<String> {
-        let name = field.ident.as_ref().map(|v| v.to_string()).unwrap_or_else(|| index.unwrap().to_string());
-        let ty = field.ty.span().source_text().to_token_stream().to_string().replace("\"", "");;
+        let name = field
+            .ident
+            .as_ref()
+            .map(|v| v.to_string())
+            .unwrap_or_else(|| index.unwrap().to_string());
+        let ty = field
+            .ty
+            .span()
+            .source_text()
+            .to_token_stream()
+            .to_string()
+            .replace("\"", "");
         //println!("{:?}", field.ty.to_token_stream());
-        //println!("match_type: {}", &ty);
+        //println!("match_type: {} len={}", &ty, ty.len());
         Some(match ty.as_str() {
-            Self::RWLOCK => {Self::sync_rwlock_getter(&name)}
-            Self::MUTEX => {Self::sync_mutex_getter(&name)}
-            Self::CELL => {Self::cell_getter(&name)}
-            Self::REF_CELL => {Self::refcell_getter(&name)}
-            _ => {return None}
+            Self::RWLOCK => Self::sync_rwlock_getter(&name),
+            Self::MUTEX => Self::sync_mutex_getter(&name),
+            Self::CELL => Self::cell_getter(&name),
+            Self::REF_CELL => Self::refcell_getter(&name),
+            _ => return None,
         })
     }
 }
-
 
 #[derive(Debug, Clone, Copy)]
 enum PubScope {
@@ -174,7 +191,8 @@ impl ToString for PubScope {
             Self::Crate => "crate",
             Self::Super => "super",
             Self::Self_ => "self",
-        }.to_string()
+        }
+        .to_string()
     }
 }
 
@@ -191,7 +209,6 @@ impl FromStr for PubScope {
         })
     }
 }
-
 
 #[derive(Debug, Default)]
 struct DataclassAttribute {
@@ -216,7 +233,6 @@ impl DataclassAttribute {
     const CONST: &'static str = "const";
 }
 
-
 impl DataclassAttribute {
     fn setter() -> Self {
         Self {
@@ -238,52 +254,51 @@ impl DataclassAttribute {
     fn setup(&mut self, meta: ParseNestedMeta<'_>) {
         //println!("setup meta: {}", meta.path.get_ident().unwrap());
         if meta.path.is_ident(Self::NAME) {
-            self.name = meta.value().map(|v| v.parse::<LitStr>().expect("name parse error").value()).ok();
+            self.name = meta
+                .value()
+                .map(|v| v.parse::<LitStr>().expect("name parse error").value())
+                .ok();
             //println!("meta name: {:?}", self.name);
         } else if meta.path.is_ident(Self::ASREF) {
-            self.as_ref = meta.value()
-                .map(|v| 
-                    v.parse::<LitBool>()
-                    ).map(|v| 
-                    v.map(|v| v.value()).ok() == Some(true))
-                    .unwrap_or(true);
+            self.as_ref = meta
+                .value()
+                .map(|v| v.parse::<LitBool>())
+                .map(|v| v.map(|v| v.value()).ok() == Some(true))
+                .unwrap_or(true);
         } else if meta.path.is_ident(Self::PUB) {
-            self.is_pub = meta.value()
-                .map(|v| 
-                    v.parse::<LitBool>()
-                    ).map(|v| 
-                    v.map(|v| v.value()).ok() == Some(true))
-                    .unwrap_or(true);
+            self.is_pub = meta
+                .value()
+                .map(|v| v.parse::<LitBool>())
+                .map(|v| v.map(|v| v.value()).ok() == Some(true))
+                .unwrap_or(true);
         } else if meta.path.is_ident(Self::CONST) && self.is_getter {
-            self.is_const = meta.value()
-                .map(|v| 
-                    v.parse::<LitBool>()
-                    ).map(|v| 
-                    v.map(|v| v.value()).ok() == Some(true))
-                    .unwrap_or(true);
+            self.is_const = meta
+                .value()
+                .map(|v| v.parse::<LitBool>())
+                .map(|v| v.map(|v| v.value()).ok() == Some(true))
+                .unwrap_or(true);
         } else if meta.path.is_ident(Self::SKIP) {
             self.is_skip = true;
         } else if meta.path.is_ident(Self::PUB_SCOPE) {
             self.is_pub = true;
-            self.pub_range = meta.value()
-                .map(|v| 
-                    v.parse::<LitStr>().expect("pub range parse error"))
-                    .map(|v| PubScope::from_str(&v.value()).expect("pub range parse error")).ok();
+            self.pub_range = meta
+                .value()
+                .map(|v| v.parse::<LitStr>().expect("pub range parse error"))
+                .map(|v| PubScope::from_str(&v.value()).expect("pub range parse error"))
+                .ok();
         } else {
             //compile_error!("Unsupport attribute");
         }
     }
-
 
     fn of(meta: &Meta) -> (Self, Self) {
         let mut getter = DataclassAttribute::getter();
         let mut setter = DataclassAttribute::setter();
         let mut skip = false;
         match meta {
-            Meta::Path(_path) => {
-            }
+            Meta::Path(_path) => {}
             Meta::List(list) => {
-                let _ = list.parse_nested_meta(|meta| { 
+                let _ = list.parse_nested_meta(|meta| {
                     if meta.path.is_ident(Self::SKIP) {
                         getter.is_skip = true;
                         setter.is_skip = true;
@@ -307,16 +322,26 @@ impl DataclassAttribute {
                     Ok(())
                 });
             }
-            Meta::NameValue(_namavalue) => {
-            }
+            Meta::NameValue(_namavalue) => {}
         }
         (getter, setter)
     }
 
-    fn generate_method(&mut self, method_name: Option<String>, field: &Field, index: Option<usize>) -> proc_macro2::TokenStream {
+    fn generate_method(
+        &mut self,
+        method_name: Option<String>,
+        field: &Field,
+        index: Option<usize>,
+    ) -> proc_macro2::TokenStream {
         let mut impl_str = String::new();
         let tp = field.ty.clone();
-        let ty = field.ty.span().source_text().to_token_stream().to_string().replace("\"", "");
+        let ty = field
+            .ty
+            .span()
+            .source_text()
+            .to_token_stream()
+            .to_string()
+            .replace("\"", "");
         if self.is_pub {
             impl_str += "pub"
         }
@@ -343,14 +368,24 @@ impl DataclassAttribute {
                 let tp = field.ty.clone();
                 let tokens_ = tp.into_token_stream().into_iter().skip(2);
                 let len = tokens.count() - 1;
-                impl_str += &tokens_.take(len).collect::<proc_macro2::TokenStream>().to_string();
+                impl_str += &tokens_
+                    .take(len)
+                    .collect::<proc_macro2::TokenStream>()
+                    .to_string();
                 impl_str += ") {";
                 impl_str += &template;
             } else {
                 impl_str += "mut self, value: ";
                 impl_str += &field.ty.to_token_stream().to_string();
                 impl_str += ") {";
-                impl_str += &format!("self.{} = value;", field.ident.as_ref().map(|v| v.to_string()).unwrap_or_else(|| {index.expect("no index").to_string()}));
+                impl_str += &format!(
+                    "self.{} = value;",
+                    field
+                        .ident
+                        .as_ref()
+                        .map(|v| v.to_string())
+                        .unwrap_or_else(|| { index.expect("no index").to_string() })
+                );
             }
         } else {
             impl_str += "self) -> ";
@@ -359,7 +394,10 @@ impl DataclassAttribute {
                 let tp = field.ty.clone();
                 let tokens_ = tp.into_token_stream().into_iter().skip(2);
                 let len = tokens.count() - 1;
-                impl_str += &tokens_.take(len).collect::<proc_macro2::TokenStream>().to_string();
+                impl_str += &tokens_
+                    .take(len)
+                    .collect::<proc_macro2::TokenStream>()
+                    .to_string();
                 //println!("template: {}", &template);
                 //println!("impl_str: {}", &impl_str);
                 impl_str += " {";
@@ -378,7 +416,14 @@ impl DataclassAttribute {
                 if self.as_ref && !DataclassTemplate::is_copyable(&ty) {
                     impl_str += "&";
                 }
-                impl_str += &format!("self.{}", field.ident.as_ref().map(|v| v.to_string()).unwrap_or_else(|| {index.expect("no index").to_string()}));
+                impl_str += &format!(
+                    "self.{}",
+                    field
+                        .ident
+                        .as_ref()
+                        .map(|v| v.to_string())
+                        .unwrap_or_else(|| { index.expect("no index").to_string() })
+                );
             }
         }
         impl_str += "}";
@@ -386,7 +431,6 @@ impl DataclassAttribute {
         syn::parse_str(&impl_str).expect("method parse error")
     }
 }
-
 
 fn dataclass_named_field_impl(field: &Field) -> proc_macro2::TokenStream {
     let (mut getter, mut setter) = (DataclassAttribute::getter(), DataclassAttribute::setter());
@@ -413,9 +457,7 @@ fn dataclass_named_field_impl(field: &Field) -> proc_macro2::TokenStream {
 
     if !getter.is_skip {
         impls.push(if getter.name.is_none() {
-            getter.generate_method(
-            Some(format!("get_{}", &field_name_str))
-            , field, None)
+            getter.generate_method(Some(format!("get_{}", &field_name_str)), field, None)
         } else {
             getter.generate_method(None, field, None)
         });
@@ -423,17 +465,14 @@ fn dataclass_named_field_impl(field: &Field) -> proc_macro2::TokenStream {
 
     if !setter.is_skip {
         impls.push(if setter.name.is_none() {
-            setter.generate_method(
-            Some(format!("set_{}", &field_name_str))
-            , field, None)
+            setter.generate_method(Some(format!("set_{}", &field_name_str)), field, None)
         } else {
             setter.generate_method(None, field, None)
         });
     }
 
-    let impls = impls.into_iter();
 
-    let _ty = &field.ty;
+    //let _ty = &field.ty;
     //println!("Field type: {}",ty.span().source_text().to_token_stream().to_string());
     quote! {
         #(#impls)*
@@ -457,9 +496,7 @@ fn dataclass_unnamed_field_impl(index: usize, field: &Field) -> proc_macro2::Tok
 
     if !getter.is_skip {
         impls.push(if getter.name.is_none() {
-            getter.generate_method(
-            Some(format!("get_{}", &field_name_str))
-            , field, Some(index))
+            getter.generate_method(Some(format!("get_{}", &field_name_str)), field, Some(index))
         } else {
             getter.generate_method(None, field, Some(index))
         });
@@ -467,14 +504,11 @@ fn dataclass_unnamed_field_impl(index: usize, field: &Field) -> proc_macro2::Tok
 
     if !setter.is_skip {
         impls.push(if setter.name.is_none() {
-            setter.generate_method(
-            Some(format!("set_{}", &field_name_str))
-            , field, Some(index))
+            setter.generate_method(Some(format!("set_{}", &field_name_str)), field, Some(index))
         } else {
             setter.generate_method(None, field, Some(index))
         });
     }
-
 
     //let _ty = &field.ty;
     //println!("Field type: {}",ty.span().source_text().to_token_stream().to_string());
@@ -487,14 +521,15 @@ fn dataclass_unnamed_field_impl(index: usize, field: &Field) -> proc_macro2::Tok
 pub fn dataclass_derive(input: TokenStream) -> TokenStream {
     let input: DeriveInput = syn::parse(input).unwrap();
 
-    let struct_name= &input.ident;
+    let struct_name = &input.ident;
 
     let methods = match &input.data {
         Data::Struct(data) => match &data.fields {
             Fields::Named(fields) => {
-                let field_methods = fields.named.iter().map(|field| {
-                    dataclass_named_field_impl(field)
-                });
+                let field_methods = fields
+                    .named
+                    .iter()
+                    .map(|field| dataclass_named_field_impl(field));
                 quote! {
                     impl #struct_name {
                         #(#field_methods)*
@@ -502,9 +537,11 @@ pub fn dataclass_derive(input: TokenStream) -> TokenStream {
                 }
             }
             Fields::Unnamed(fields) => {
-                let field_methods = fields.unnamed.iter().enumerate().map(|(i, field)| {
-                    dataclass_unnamed_field_impl(i, field)
-                });
+                let field_methods = fields
+                    .unnamed
+                    .iter()
+                    .enumerate()
+                    .map(|(i, field)| dataclass_unnamed_field_impl(i, field));
 
                 quote! {
                     impl #struct_name {

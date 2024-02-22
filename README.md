@@ -125,13 +125,13 @@ There are some available option in field attribute #[dataclass]
 
 ## To epecial the method name of getter and setter
 
-##[dataclass(setter(name="your_method_name"), setter(name="your_method_name"))]
+#[dataclass(setter(name="your_method_name"), setter(name="your_method_name"))]
 
 ## To epecial Pub Scope of getter and setter
 
 scope is one of ["crate", "super", "self"]
 
-##[dataclass(setter(pub_scope="scope"))]
+#[dataclass(setter(pub_scope="scope"))]
 
 ## To disable pub of getter and setter
 
