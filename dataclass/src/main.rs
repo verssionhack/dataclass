@@ -8,7 +8,7 @@ use proc_dataclass::Dataclass;
 
 #[derive(Debug, Dataclass, Default)]
 struct TestStruct {
-    #[dataclass(getter(name="get_name"), setter(name="set_name"))]
+    #[dataclass(setter(skip))]
     _name_: String,
     #[dataclass(getter(name="get_age_cell"), setter(name="set_age_cell", pub_scope="crate"))]
     age_cell: Cell<u16>,
@@ -45,6 +45,7 @@ fn main() {
         _name_: "yinpeach".to_string(),
         ..Default::default()
     };
+    println!("name: {}", test_struct.get_name());
     let test_varint = TestVarint::default();
 }
 

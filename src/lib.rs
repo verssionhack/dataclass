@@ -236,7 +236,7 @@ impl DataclassAttribute {
     }
 
     fn setup(&mut self, meta: ParseNestedMeta<'_>) {
-        println!("setup meta: {}", meta.path.get_ident().unwrap());
+        //println!("setup meta: {}", meta.path.get_ident().unwrap());
         if meta.path.is_ident(Self::NAME) {
             self.name = meta.value().map(|v| v.parse::<LitStr>().expect("name parse error").value()).ok();
             //println!("meta name: {:?}", self.name);
@@ -388,98 +388,99 @@ impl DataclassAttribute {
 }
 
 
-fn dataclass_named_field_impl(field: &Field) -> Option<proc_macro2::TokenStream> {
+fn dataclass_named_field_impl(field: &Field) -> proc_macro2::TokenStream {
+    let (mut getter, mut setter) = (DataclassAttribute::getter(), DataclassAttribute::setter());
     for attr in &field.attrs {
         if !attr.path().is_ident(Dataclass::META_PATH) {
             continue;
         }
         //println!("for named field: {:?}", field.ident);
-        let (mut getter, mut setter) = DataclassAttribute::of(&attr.meta);
-        let field_name = field.ident.as_ref().expect("field has no name");
-        let field_name_str = {
-            let mut _name = format!("{}", field_name);
-            while _name.chars().nth(0) == Some('_') {
-                _name = _name[1..].to_string();
-            }
-            while _name.chars().last() == Some('_') {
-                _name = _name[.._name.len() - 1].to_string();
-            }
-            _name
-        };
-        let mut impls = Vec::new();
-
-        if !getter.is_skip {
-            impls.push(if getter.name.is_none() {
-                getter.generate_method(
-                Some(format!("get_{}", &field_name_str))
-                , field, None)
-            } else {
-                getter.generate_method(None, field, None)
-            });
+        (getter, setter) = DataclassAttribute::of(&attr.meta);
+        break;
+    }
+    let field_name = field.ident.as_ref().expect("field has no name");
+    let field_name_str = {
+        let mut _name = format!("{}", field_name);
+        while _name.chars().nth(0) == Some('_') {
+            _name = _name[1..].to_string();
         }
-
-        if !setter.is_skip {
-            impls.push(if setter.name.is_none() {
-                setter.generate_method(
-                Some(format!("set_{}", &field_name_str))
-                , field, None)
-            } else {
-                setter.generate_method(None, field, None)
-            });
+        while _name.chars().last() == Some('_') {
+            _name = _name[.._name.len() - 1].to_string();
         }
+        _name
+    };
+    let mut impls = Vec::new();
 
-        let impls = impls.into_iter();
-
-        let _ty = &field.ty;
-        //println!("Field type: {}",ty.span().source_text().to_token_stream().to_string());
-        return Some(quote! {
-            #(#impls)*
+    if !getter.is_skip {
+        impls.push(if getter.name.is_none() {
+            getter.generate_method(
+            Some(format!("get_{}", &field_name_str))
+            , field, None)
+        } else {
+            getter.generate_method(None, field, None)
         });
     }
-    None
+
+    if !setter.is_skip {
+        impls.push(if setter.name.is_none() {
+            setter.generate_method(
+            Some(format!("set_{}", &field_name_str))
+            , field, None)
+        } else {
+            setter.generate_method(None, field, None)
+        });
+    }
+
+    let impls = impls.into_iter();
+
+    let _ty = &field.ty;
+    //println!("Field type: {}",ty.span().source_text().to_token_stream().to_string());
+    quote! {
+        #(#impls)*
+    }
 }
 
-fn dataclass_unnamed_field_impl(index: usize, field: &Field) -> Option<proc_macro2::TokenStream> {
+fn dataclass_unnamed_field_impl(index: usize, field: &Field) -> proc_macro2::TokenStream {
+    let (mut getter, mut setter) = (DataclassAttribute::getter(), DataclassAttribute::setter());
     for attr in &field.attrs {
         if !attr.path().is_ident(Dataclass::META_PATH) {
             continue;
         }
         //println!("for unnamed field: {}", index);
-        let (mut getter, mut setter) = DataclassAttribute::of(&attr.meta);
-        let field_name_str = format!("field_{}", index);
-        let mut impls = Vec::new();
+        (getter, setter) = DataclassAttribute::of(&attr.meta);
+    }
+    let field_name_str = format!("field_{}", index);
+    let mut impls = Vec::new();
 
-        //println!("getter: {:?}\n", getter);
-        //println!("setter: {:?}\n", setter);
+    //println!("getter: {:?}\n", getter);
+    //println!("setter: {:?}\n", setter);
 
-        if !getter.is_skip {
-            impls.push(if getter.name.is_none() {
-                getter.generate_method(
-                Some(format!("get_{}", &field_name_str))
-                , field, Some(index))
-            } else {
-                getter.generate_method(None, field, Some(index))
-            });
-        }
-
-        if !setter.is_skip {
-            impls.push(if setter.name.is_none() {
-                setter.generate_method(
-                Some(format!("set_{}", &field_name_str))
-                , field, Some(index))
-            } else {
-                setter.generate_method(None, field, Some(index))
-            });
-        }
-
-
-        //let _ty = &field.ty;
-        //println!("Field type: {}",ty.span().source_text().to_token_stream().to_string());
-        return Some(quote! {
-            #(#impls)*
+    if !getter.is_skip {
+        impls.push(if getter.name.is_none() {
+            getter.generate_method(
+            Some(format!("get_{}", &field_name_str))
+            , field, Some(index))
+        } else {
+            getter.generate_method(None, field, Some(index))
         });
     }
-    None
+
+    if !setter.is_skip {
+        impls.push(if setter.name.is_none() {
+            setter.generate_method(
+            Some(format!("set_{}", &field_name_str))
+            , field, Some(index))
+        } else {
+            setter.generate_method(None, field, Some(index))
+        });
+    }
+
+
+    //let _ty = &field.ty;
+    //println!("Field type: {}",ty.span().source_text().to_token_stream().to_string());
+    quote! {
+        #(#impls)*
+    }
 }
 
 #[proc_macro_derive(Dataclass, attributes(dataclass))]
@@ -493,7 +494,7 @@ pub fn dataclass_derive(input: TokenStream) -> TokenStream {
             Fields::Named(fields) => {
                 let field_methods = fields.named.iter().map(|field| {
                     dataclass_named_field_impl(field)
-                }).filter(|imp| imp.is_some()).map(|imp| imp.unwrap());
+                });
                 quote! {
                     impl #struct_name {
                         #(#field_methods)*
@@ -503,7 +504,7 @@ pub fn dataclass_derive(input: TokenStream) -> TokenStream {
             Fields::Unnamed(fields) => {
                 let field_methods = fields.unnamed.iter().enumerate().map(|(i, field)| {
                     dataclass_unnamed_field_impl(i, field)
-                }).filter(|imp| imp.is_some()).map(|imp| imp.unwrap());
+                });
 
                 quote! {
                     impl #struct_name {

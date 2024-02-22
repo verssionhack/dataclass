@@ -1,32 +1,13 @@
-impl TestStruct {
-    pub fn get_name(&self) -> &String {
-        &self._name_
-    }
-    pub fn set_name(&mut self, value: String) {
-        self._name_ = value;
-    }
-    pub fn get_age_cell(&self) -> &Cell<u16> {
-        &self.age_cell
-    }
-    pub(crate) fn set_age_cell(&mut self, value: Cell<u16>) {
-        self.age_cell = value;
-    }
-    pub fn get_age_ref_cell(&self) -> &RefCell<u16> {
-        &self.age_ref_cell
-    }
-    pub fn set_age_ref_cell(&mut self, value: RefCell<u16>) {
-        self.age_ref_cell = value;
-    }
-    pub fn get_age_rw(&self) -> &RwLock<u16> {
-        &self.age_rw
-    }
-    pub fn set_age_rw(&mut self, value: RwLock<u16>) {
-        self.age_rw = value;
-    }
-    pub fn get_age_lock(&self) -> &Mutex<u16> {
-        &self.age_lock
-    }
-    pub(self) fn set_age_lock(&mut self, value: Mutex<u16>) {
-        self.age_lock = value;
-    }
+impl TestStruct
+{
+    pub fn get_age_cell(&self) -> u16 { self.age_cell.get() } pub(crate) fn
+    set_age_cell(&self, value: u16) { self.age_cell.set(value); } pub fn
+    get_age_ref_cell(&self) -> u16 { *self.age_ref_cell.borrow() } pub fn
+    set_age_ref_cell(&self, value: u16)
+    { *self.age_ref_cell.borrow_mut() = value; } pub fn get_age_rw(&self) ->
+    u16 { *self.age_rw.read().unwrap() } pub fn set_age_rw(&self, value: u16)
+    { *self.age_rw.write().unwrap() = value; } pub fn get_age_lock(&self) ->
+    u16 { *self.age_lock.lock().unwrap() } pub(self) fn
+    set_age_lock(&self, value: u16)
+    { *self.age_lock.lock().unwrap() = value; }
 }
