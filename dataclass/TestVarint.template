@@ -1,0 +1,32 @@
+impl TestVarint {
+    pub fn get_name(&self) -> &String {
+        &self.0
+    }
+    pub fn set_name(&mut self, value: String) {
+        self.0 = value;
+    }
+    pub fn get_age_cell(&self) -> &Cell<u16> {
+        &self.1
+    }
+    pub fn set_age_cell(&mut self, value: Cell<u16>) {
+        self.1 = value;
+    }
+    pub fn get_age_ref_cell(&self) -> &RefCell<u16> {
+        &self.2
+    }
+    pub fn set_age_ref_cell(&mut self, value: RefCell<u16>) {
+        self.2 = value;
+    }
+    pub fn get_age_rw(&self) -> &RwLock<u16> {
+        &self.3
+    }
+    pub fn set_age_rw(&mut self, value: RwLock<u16>) {
+        self.3 = value;
+    }
+    pub fn get_age_lock(&self) -> &Mutex<u16> {
+        &self.4
+    }
+    pub fn set_age_lock(&mut self, value: Mutex<u16>) {
+        self.4 = value;
+    }
+}
