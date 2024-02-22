@@ -1,5 +1,5 @@
 [package]
-name = "proc_dataclass"
+name = "dataclass"
 authors = ["yinpeach <yinpeach0314@gmail.com>"]
 version = "0.1.0"
 edition = "2021"

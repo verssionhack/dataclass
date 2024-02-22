@@ -9,7 +9,7 @@ Auto implement setter and getter method for dataclass
 To follow line in your Cargo.toml
 ```
 [dependencies]
-proc_dataclass = { git = "https://github.com/verssionhack/dataclass.git" }
+dataclass = { git = "https://github.com/verssionhack/dataclass.git" }
 ```
 
 ## Usage
