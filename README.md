@@ -15,7 +15,7 @@ dataclass = { git = "https://github.com/verssionhack/dataclass.git" }
 ## Usage
 
 Say this is a Struct named TestStruct and a Varint named TestVarint:
-```
+```rust
 #[derive(Dataclass)]
 struct TestStruct {
     #[dataclass(getter(name="get_name"), setter(name="set_name"))]
@@ -52,7 +52,7 @@ Both has a derive: #[derive(Dataclass)] and Some field has attr #[dataclass]
 
 Which will auto impl setter and getter like:
 
-```
+```rust
 impl TestStruct {
     pub fn get_name(&self) -> &str {
         &self._name_
@@ -125,13 +125,13 @@ There are some available option in field attribute #[dataclass]
 
 ## To epecial the method name of getter and setter
 
-#[dataclass(setter(name="your_method_name"), setter(name="your_method_name"))]
+* #[dataclass(setter(name="your_method_name"), setter(name="your_method_name"))]
 
 ## To epecial Pub Scope of getter and setter
 
-scope is one of ["crate", "super", "self"]
+* scope is one of ["crate", "super", "self"]
 
-#[dataclass(setter(pub_scope="scope"))]
+* #[dataclass(setter(pub_scope="scope"))]
 
 ## To disable pub of getter and setter
 
@@ -140,17 +140,17 @@ If you want disable it, you can set the pub equals false like #[dataclass(getter
 
 ## To set method to const
 
-#[dataclass(getter(const), setter(const))]
+* #[dataclass(getter(const), setter(const))]
 
 ## To skip implement a field
 
 you can skip setter or getter, or both, like
 
-#[dataclass(setter(skip), getter(skip))]
+* #[dataclass(setter(skip), getter(skip))]
 or
-#[dataclass(skip)]
+* #[dataclass(skip)]
 
-#Usage Notice
+# Usage Notice
 
 Default implement for named field will remote leading '_' and trailing '_'
 
