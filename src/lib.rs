@@ -46,6 +46,7 @@ impl DataclassTemplate {
     const F64: &'static str = "f64";
     const STRING: &'static str = "String";
     const STR: &'static str = "str";
+    const BOOL: &'static str = "bool";
 
     const COPYABLE_TYPES: &'static [&'static str] = &[
         Self::U8,
@@ -61,6 +62,7 @@ impl DataclassTemplate {
         Self::F32,
         Self::F64,
         Self::STR,
+        Self::BOOL,
     ];
 
     fn is_copyable(name: &str) -> bool {
@@ -81,6 +83,7 @@ impl DataclassTemplate {
             Self::I128 => Self::I128,
             Self::F32 => Self::F32,
             Self::F64 => Self::F64,
+            Self::BOOL => Self::BOOL,
             Self::STRING => Self::STR,
             _ => return None,
         })
@@ -100,6 +103,7 @@ impl DataclassTemplate {
             Self::I128 => Self::I128,
             Self::F32 => Self::F32,
             Self::F64 => Self::F64,
+            Self::BOOL => Self::BOOL,
             Self::STRING => Self::STR,
             _ => return None,
         })
